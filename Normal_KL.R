@@ -7,39 +7,66 @@ library(tidyverse)
 ## KL divergence, epsilon = 0.1 and M^2 = 2    ##
 #################################################
 eps = 0.1
-n = 100
+n = 300
 mu0 = 0
 mus = seq(from = -1, to = 1, length.out = n)
 sigmas = seq(from = 1/n, to = 2, length.out = n)
 
-sigma_grid = list()
+normal_kl_grid = function(sigma0)
+{
+  new_grid <- tibble(mu = rep(mus, n), 
+                     sigma = rep(sigmas, each = n), 
+                     color = rep(NA, n*n))
+  for(ii in 1:length(sigmas))
+  {
+    color = rep(FALSE, n)
+    radius = sigmas[ii]*(1+2*eps-sigma0/sigmas[ii]-log(sigmas[ii]/sigma0))
+    if(radius > 0)
+    {
+      inter_left = mu0 - sqrt(radius)
+      inter_right = mu0 + sqrt(radius)
+      color = (mus > inter_left) & (mus < inter_right)
+    }
+    new_grid$color[(n*(ii-1)+1):(n*ii)] = color
+  }
+  return(new_grid)
+}
+
+unit_sigma_grid = normal_kl_grid(1)
+
+join_grid = normal_kl_grid(sigmas[1])
 for(sigma0 in sigmas)
 {
-  new_grid <- tibble()
-  for(sigma1 in sigmas)
-  {
-    radius = sigma1*(1+2*eps-sigma0/sigma1-log(sigma1/sigma0))
-    inter_left = mu0 - radius
-    inter_right = mu0 + radius
-    color = (mus > inter_left) & (mus < inter_right)
-    new_grid %<>% rbind(tibble(mu = mus, sigma = sigma1, color = color))
-  }
-  sigma_grid[[as.character(sigma0)]] = new_grid
+  new_grid = normal_kl_grid(sigma0)
+  join_grid$color = (join_grid$color | new_grid$color)
 }
 
-#write_rds(sigma_grid, "./data/KL_norm_0.1_100_0.rds")
-#sigma_grid = sigma_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
+#Save data
+#write_rds(join_grid, "./data/KL_norm_0.1_300_0.rds")
+#join_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
 
-small_grid = sigma_grid[[round(n/2)]]
-join_grid = tibble(mu = small_grid$mu, sigma = small_grid$sigma)
-max_col = sigma_grid[[1]]$color
-for(sigma0 in as.character(sigmas))
+plot_norm_kl_grid <- function(grid)
 {
-  max_col = (max_col | sigma_grid[[sigma0]]$color)
+  grid %>% 
+    ggplot(aes(x = mu, y = sigma)) +
+    theme_minimal() +
+    geom_tile(aes(alpha = 0.75, 
+                  fill = as.numeric(color)), 
+              show.legend = FALSE) +
+    scale_fill_gradient(low = "white",
+                        high = "steelblue") +
+    geom_segment(aes(x = 0, y = 0, 
+                     xend = 0, yend = 2, 
+                     colour = "red"),
+                 show.legend = FALSE) +
+    xlab(expression(mu)) + 
+    ylab(expression(sigma^2))
 }
-join_grid$color = max_col
 
-join_grid %>% 
-  filter(color == TRUE) %>%
-  ggplot(aes(x = mu, y = sigma)) +
-  geom_point()
+plot_norm_kl_grid(unit_sigma_grid)
+#ggsave("./figures/norm_kl_0.1_300_0_1.pdf")
+#ggsave("./figures/norm_kl_0.1_300_0_1.png")
+
+plot_norm_kl_grid(join_grid)
+#ggsave("./figures/norm_kl_0.1_300_0.pdf")
+#ggsave("./figures/norm_kl_0.1_300_0.png")
