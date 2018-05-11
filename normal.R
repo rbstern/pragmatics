@@ -4,7 +4,7 @@ library(tidyverse)
 #################################################
 ## X ~ N(mu, sigma^2), where sigma is unknown. ##
 ## Pragmatic hypothesis for H0: mu = 0 using   ##
-## KL divergence, epsilon = 0.1 and M^2 = 2    ##
+##  epsilon = 0.1 and M^2 = 2, KL and CD.      ##
 #################################################
 eps = 0.1
 n = 300
@@ -45,7 +45,7 @@ for(sigma0 in sigmas)
 
 #Save data
 #write_rds(join_grid, "./data/KL_norm_0.1_300_0.rds")
-#join_KL_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
+#join_kl_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
 
 # Classification distance grids
 
@@ -102,11 +102,11 @@ plot_norm_grid <- function(grid)
 
 #KL plots
 
-plot_norm_grid(unit_sigma_grid)
+plot_norm_grid(unit_sigma_kl_grid)
 #ggsave("./figures/norm_kl_0.1_300_0_1.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0_1.png")
 
-plot_norm_grid(join_grid)
+plot_norm_grid(join_kl_grid)
 #ggsave("./figures/norm_kl_0.1_300_0.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0.png")
 
