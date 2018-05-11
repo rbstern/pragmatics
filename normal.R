@@ -34,7 +34,7 @@ normal_kl_grid = function(sigma0)
   return(new_grid)
 }
 
-unit_sigma_grid = normal_kl_grid(1)
+unit_sigma_kl_grid = normal_kl_grid(1)
 
 join_grid = normal_kl_grid(sigmas[1])
 for(sigma0 in sigmas)
@@ -49,25 +49,24 @@ for(sigma0 in sigmas)
 
 # Classification distance grids
 
-normal_cd_grid = function(sigma0, BB = 10^2)
+normal_cd_grid = function(sigma0)
 {
-  new_grid <- tibble(mu = rep(mus, n), 
+  new_grid <- tibble(mu = rep(mus, n),
                      sigma = rep(sigmas, each = n), 
                      color = rep(NA, n*n))
   for(ii in 1:length(sigmas))
   {
-    print(ii/length(sigmas))
     for(jj in 1:length(mus))
     {
-      xx = rnorm(BB, mu0, sigma0)
-      cd = abs(mean(dnorm(xx, mus[jj], sigmas[ii])/dnorm(xx, mu0, sigma0) - 1))/2
+      l_1 = function(x) abs(dnorm(x, mus[jj], sigmas[ii])-dnorm(x, mu0, sigma0))
+      cd = 0.25*integrate(l_1, lower = -Inf, upper = Inf)$value
       new_grid$color[n*(ii-1)+jj] = (cd <= eps)
     }
   }
   return(new_grid)
 }
 
-unit_sigma_grid = normal_cd_grid(1)
+unit_sigma_cd_grid = normal_cd_grid(1)
 
 join_grid = normal_cd_grid(sigmas[1])
 for(sigma0 in sigmas)
@@ -79,7 +78,7 @@ for(sigma0 in sigmas)
 
 #Save data
 #write_rds(join_grid, "./data/CD_norm_0.1_300_0.rds")
-#join_CD_grid = read_rds("./data/CD_norm_0.1_100_0.rds")
+#join_cd_grid = read_rds("./data/CD_norm_0.1_300_0.rds")
 
 # Plot function
 
@@ -101,6 +100,8 @@ plot_norm_grid <- function(grid)
     ylab(expression(sigma^2))
 }
 
+#KL plots
+
 plot_norm_grid(unit_sigma_grid)
 #ggsave("./figures/norm_kl_0.1_300_0_1.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0_1.png")
@@ -108,3 +109,13 @@ plot_norm_grid(unit_sigma_grid)
 plot_norm_grid(join_grid)
 #ggsave("./figures/norm_kl_0.1_300_0.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0.png")
+
+#CD plots
+
+plot_norm_grid(unit_sigma_cd_grid)
+#ggsave("./figures/norm_cd_0.1_300_0_1.pdf")
+#ggsave("./figures/norm_cd_0.1_300_0_1.png")
+
+plot_norm_grid(join_cd_grid)
+#ggsave("./figures/norm_cd_0.1_300_0.pdf")
+#ggsave("./figures/norm_cd_0.1_300_0.png")
