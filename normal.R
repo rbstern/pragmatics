@@ -12,6 +12,8 @@ mu0 = 0
 mus = seq(from = -1, to = 1, length.out = n)
 sigmas = seq(from = 1/n, to = 2, length.out = n)
 
+# KL grids
+
 normal_kl_grid = function(sigma0)
 {
   new_grid <- tibble(mu = rep(mus, n), 
@@ -43,9 +45,45 @@ for(sigma0 in sigmas)
 
 #Save data
 #write_rds(join_grid, "./data/KL_norm_0.1_300_0.rds")
-#join_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
+#join_KL_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
 
-plot_norm_kl_grid <- function(grid)
+# Classification distance grids
+
+normal_cd_grid = function(sigma0, BB = 10^2)
+{
+  new_grid <- tibble(mu = rep(mus, n), 
+                     sigma = rep(sigmas, each = n), 
+                     color = rep(NA, n*n))
+  for(ii in 1:length(sigmas))
+  {
+    print(ii/length(sigmas))
+    for(jj in 1:length(mus))
+    {
+      xx = rnorm(BB, mu0, sigma0)
+      cd = abs(mean(dnorm(xx, mus[jj], sigmas[ii])/dnorm(xx, mu0, sigma0) - 1))/2
+      new_grid$color[n*(ii-1)+jj] = (cd <= eps)
+    }
+  }
+  return(new_grid)
+}
+
+unit_sigma_grid = normal_cd_grid(1)
+
+join_grid = normal_cd_grid(sigmas[1])
+for(sigma0 in sigmas)
+{
+  print(sigma0)
+  new_grid = normal_cd_grid(sigma0)
+  join_grid$color = (join_grid$color | new_grid$color)
+}
+
+#Save data
+#write_rds(join_grid, "./data/CD_norm_0.1_300_0.rds")
+#join_CD_grid = read_rds("./data/CD_norm_0.1_100_0.rds")
+
+# Plot function
+
+plot_norm_grid <- function(grid)
 {
   grid %>% 
     ggplot(aes(x = mu, y = sigma)) +
@@ -63,10 +101,10 @@ plot_norm_kl_grid <- function(grid)
     ylab(expression(sigma^2))
 }
 
-plot_norm_kl_grid(unit_sigma_grid)
+plot_norm_grid(unit_sigma_grid)
 #ggsave("./figures/norm_kl_0.1_300_0_1.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0_1.png")
 
-plot_norm_kl_grid(join_grid)
+plot_norm_grid(join_grid)
 #ggsave("./figures/norm_kl_0.1_300_0.pdf")
 #ggsave("./figures/norm_kl_0.1_300_0.png")
