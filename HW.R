@@ -169,11 +169,14 @@ write_rds(join_grid, "./data/C_HW_0.01_200.rds")
 
 plot_grid = function(grid, col = "dodgerblue4", alpha = 0.2)
 {
-  grid %<>% filter(color)
-  grid_hull = grid %>% 
-    select(theta1, theta3) %>%
-    chull()
-  grid[grid_hull,] %>%
+  grid %<>% filter(color) %>%
+    group_by(theta1)
+  poly_min = grid %>% summarise(theta3 = min(theta3))
+  poly_max = grid %>% 
+    summarise(theta3 = max(theta3)) %>%
+    arrange(desc(theta1))
+  poly_grid = bind_rows(poly_min, poly_max)
+  poly_grid %>%
     ggplot(aes(x = theta1, y = theta3)) +
     geom_polygon(color = col, fill = col, alpha = alpha) +
     geom_path(aes(x = theta1, y = theta3), data = simplex) +
@@ -201,33 +204,33 @@ add_hpd_grid = function(plot, hpd_chull_grid, hpd_labels, col = "green4", alpha 
 
 ### BP_diss
 simple_grid = generate_grid(BP_diss, p0, eps)
-plot_grid(simple_grid, alpha = 0.3) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
-#ggsave("./figures/hw_bp_0.01_200_0.33.pdf")
-#ggsave("./figures/hw_bp_0.01_200_0.33.png")
+plot_grid(simple_grid)
+ggsave("./figures/hw_bp_0.01_200_0.33.pdf")
+ggsave("./figures/hw_bp_0.01_200_0.33.png")
 
 join_grid = read_rds("./data/BP_HW_0.1_200.rds")
 plot_grid(join_grid)
-#ggsave("./figures/hw_bp_0.01_200.pdf")
-#ggsave("./figures/hw_bp_0.01_200.png")
+ggsave("./figures/hw_bp_0.01_200.pdf")
+ggsave("./figures/hw_bp_0.01_200.png")
 
 ### KL_diss
 simple_grid = generate_grid(KL_diss, p0, eps)
 plot_grid(simple_grid)
-#ggsave("./figures/hw_kl_0.01_200_0.33.pdf")
-#ggsave("./figures/hw_kl_0.01_200_0.33.png")
+ggsave("./figures/hw_kl_0.01_200_0.33.pdf")
+ggsave("./figures/hw_kl_0.01_200_0.33.png")
 
-join_grid = read_rds("./data/KL_HW_0.1_200.rds")
+join_grid = read_rds("./data/KL_HW_0.01_200.rds")
 plot_grid(join_grid)
-#ggsave("./figures/hw_kl_0.01_200.pdf")
-#ggsave("./figures/hw_kl_0.01_200.png")
+ggsave("./figures/hw_kl_0.01_200.pdf")
+ggsave("./figures/hw_kl_0.01_200.png")
 
 ### C_diss
 simple_grid = generate_grid(C_diss, p0, eps)
 plot_grid(simple_grid)
-#ggsave("./figures/hw_c_0.01_200_0.33.pdf")
-#ggsave("./figures/hw_c_0.01_200_0.33.png")
+ggsave("./figures/hw_c_0.01_200_0.33.pdf")
+ggsave("./figures/hw_c_0.01_200_0.33.png")
 
-join_grid = read_rds("./data/C_HW_0.1_200.rds")
+join_grid = read_rds("./data/C_HW_0.01_200.rds")
 plot_grid(join_grid)
-#ggsave("./figures/hw_c_0.01_200.pdf")
-#ggsave("./figures/hw_c_0.01_200.png")
+ggsave("./figures/hw_c_0.01_200.pdf")
+ggsave("./figures/hw_c_0.01_200.png")
