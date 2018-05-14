@@ -213,6 +213,10 @@ plot_grid(join_grid)
 ggsave("./figures/hw_bp_0.01_200.pdf")
 ggsave("./figures/hw_bp_0.01_200.png")
 
+plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
+ggsave("./figures/hw_bp_0.01_200_hpd.pdf")
+ggsave("./figures/hw_bp_0.01_200_hpd.png")
+
 ### KL_diss
 simple_grid = generate_grid(KL_diss, p0, eps)
 plot_grid(simple_grid)
@@ -224,6 +228,10 @@ plot_grid(join_grid)
 ggsave("./figures/hw_kl_0.01_200.pdf")
 ggsave("./figures/hw_kl_0.01_200.png")
 
+plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
+ggsave("./figures/hw_kl_0.01_200_hpd.pdf")
+ggsave("./figures/hw_kl_0.01_200_hpd.png")
+
 ### C_diss
 simple_grid = generate_grid(C_diss, p0, eps)
 plot_grid(simple_grid)
@@ -234,3 +242,7 @@ join_grid = read_rds("./data/C_HW_0.01_200.rds")
 plot_grid(join_grid)
 ggsave("./figures/hw_c_0.01_200.pdf")
 ggsave("./figures/hw_c_0.01_200.png")
+
+plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
+ggsave("./figures/hw_c_0.01_200_hpd.pdf")
+ggsave("./figures/hw_c_0.01_200_hpd.png")
