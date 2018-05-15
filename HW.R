@@ -5,8 +5,9 @@ library(magrittr)
 
 ############################################################
 ## Global parameters                                      ##
+m0 = 20                                                   ##
 p0 = 1/3                                                  ##
-eps = 0.01                                                ##
+eps = 0.1                                                 ##
 B = 200                                                   ##
 thetas = seq(0.0000001, 0.99999999, length.out = B)       ##
                                                           ##
@@ -133,35 +134,38 @@ C_diss = function(t1, t2, t3, p0, m = 1)
   this_C
 }
 
-generate_grid = function(dissimilarity, p0, eps)
+generate_grid = function(dissimilarity, p0, eps, m = 1)
 {
   color_grid %>%
-    mutate(diss = dissimilarity(theta1, theta2, theta3, p0)) %>%
+    mutate(diss = dissimilarity(theta1, theta2, theta3, p0, m)) %>%
     mutate(color = (diss < eps))
 }
 
-generate_join_grid = function(dissimilarity, eps)
+generate_join_grid = function(dissimilarity, eps, m = 1)
 {
-  join_grid = generate_grid(dissimilarity, thetas[1], eps)
+  join_grid = generate_grid(dissimilarity, thetas[1], eps, m)
   for(theta in thetas)
   {
     print(theta)
-    new_grid = generate_grid(dissimilarity, theta, eps)
+    new_grid = generate_grid(dissimilarity, theta, eps, m)
     join_grid$color = (join_grid$color | new_grid$color)
   }
   join_grid
 }
 
 # Experiments 
+file_path = function(name) paste("./data/HW_", 
+                                 name, "_", m0, "_",  eps, "_", B, 
+                                 ".rds", sep = "")
 
-join_grid = generate_join_grid(BP_diss, eps)
-write_rds(join_grid, "./data/BP_HW_0.01_200.rds")
+join_grid = generate_join_grid(BP_diss, eps, m0)
+write_rds(join_grid, file_path("BP"))
 
-join_grid = generate_join_grid(KL_diss, eps)
-write_rds(join_grid, "./data/KL_HW_0.01_200.rds")
+join_grid = generate_join_grid(KL_diss, eps, m0)
+write_rds(join_grid, file_path("KL"))
 
-join_grid = generate_join_grid(C_diss, eps)
-write_rds(join_grid, "./data/C_HW_0.01_200.rds")
+join_grid = generate_join_grid(C_diss, eps, m0)
+write_rds(join_grid, file_path("C"))
 
 # Plots
 
@@ -200,15 +204,19 @@ add_hpd_grid = function(plot, hpd_chull_grid, hpd_labels, col = "green4", alpha 
   geom_text(aes(x = x, y = y, label = idx), data = hpd_labels)
 }
 
+figure_path = function(name, ext, extra="") paste("./figures/HW_", 
+                                                  name, "_", m0, "_", eps, "_", B, 
+                                                  extra, ext, sep="")
+
 ## Actual plots
 
 ### BP_diss
-simple_grid = generate_grid(BP_diss, p0, eps)
+simple_grid = generate_grid(BP_diss, p0, eps, m0)
 plot_grid(simple_grid)
 ggsave("./figures/hw_bp_0.01_200_0.33.pdf")
 ggsave("./figures/hw_bp_0.01_200_0.33.png")
 
-join_grid = read_rds("./data/BP_HW_0.1_200.rds")
+join_grid = read_rds(file_path("BP"))
 plot_grid(join_grid)
 ggsave("./figures/hw_bp_0.01_200.pdf")
 ggsave("./figures/hw_bp_0.01_200.png")
@@ -223,7 +231,7 @@ plot_grid(simple_grid)
 ggsave("./figures/hw_kl_0.01_200_0.33.pdf")
 ggsave("./figures/hw_kl_0.01_200_0.33.png")
 
-join_grid = read_rds("./data/KL_HW_0.01_200.rds")
+join_grid = read_rds(file_path("KL"))
 plot_grid(join_grid)
 ggsave("./figures/hw_kl_0.01_200.pdf")
 ggsave("./figures/hw_kl_0.01_200.png")
@@ -233,16 +241,16 @@ ggsave("./figures/hw_kl_0.01_200_hpd.pdf")
 ggsave("./figures/hw_kl_0.01_200_hpd.png")
 
 ### C_diss
-simple_grid = generate_grid(C_diss, p0, eps)
+simple_grid = generate_grid(C_diss, p0, eps, m0)
 plot_grid(simple_grid)
 ggsave("./figures/hw_c_0.01_200_0.33.pdf")
 ggsave("./figures/hw_c_0.01_200_0.33.png")
 
-join_grid = read_rds("./data/C_HW_0.01_200.rds")
+join_grid = read_rds(file_path("C"))
 plot_grid(join_grid)
-ggsave("./figures/hw_c_0.01_200.pdf")
-ggsave("./figures/hw_c_0.01_200.png")
+ggsave(figure_path("C", ".pdf"))
+ggsave(figure_path("C", ".png"))
 
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
-ggsave("./figures/hw_c_0.01_200_hpd.pdf")
-ggsave("./figures/hw_c_0.01_200_hpd.png")
+ggsave(figure_path("C", ".pdf", extra = "_hpd"))
+ggsave(figure_path("C", ".png", extra = "_hpd"))
