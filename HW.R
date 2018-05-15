@@ -5,10 +5,14 @@ library(magrittr)
 
 ############################################################
 ## Global parameters                                      ##
-m0 = 20                                                   ##
-p0 = 1/3                                                  ##
-eps = 0.1                                                 ##
-B = 200                                                   ##
+m0 = 20 # multinomial sample size                         ##
+p0 = 1/3 # multinomial paramater in simple grid           ##
+eps = 0.1 # pragmatic slack                               ##
+B = 200 # size of grid                                    ##
+############################################################
+
+############################################################
+## Useful variables                                       ##
 thetas = seq(0.0000001, 0.99999999, length.out = B)       ##
                                                           ##
 simplex = tibble(theta1 = 0, theta3 = thetas) %>%         ##
@@ -209,42 +213,43 @@ figure_path = function(name, ext, extra="") paste("./figures/HW_",
                                                   extra, ext, sep="")
 
 ## Actual plots
+simple_extra = paste("_", round(p0, 2), sep="") 
 
 ### BP_diss
 simple_grid = generate_grid(BP_diss, p0, eps, m0)
 plot_grid(simple_grid)
-ggsave("./figures/hw_bp_0.01_200_0.33.pdf")
-ggsave("./figures/hw_bp_0.01_200_0.33.png")
+ggsave(figure_path("BP", ".pdf", extra = simple_extra))
+ggsave(figure_path("BP", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("BP"))
 plot_grid(join_grid)
-ggsave("./figures/hw_bp_0.01_200.pdf")
-ggsave("./figures/hw_bp_0.01_200.png")
+ggsave(figure_path("BP", ".pdf"))
+ggsave(figure_path("BP", ".png"))
 
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
-ggsave("./figures/hw_bp_0.01_200_hpd.pdf")
-ggsave("./figures/hw_bp_0.01_200_hpd.png")
+ggsave(figure_path("BP", ".pdf"))
+ggsave(figure_path("BP", ".png"))
 
 ### KL_diss
 simple_grid = generate_grid(KL_diss, p0, eps)
 plot_grid(simple_grid)
-ggsave("./figures/hw_kl_0.01_200_0.33.pdf")
-ggsave("./figures/hw_kl_0.01_200_0.33.png")
+ggsave(figure_path("KL", ".pdf", extra = simple_extra))
+ggsave(figure_path("KL", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("KL"))
 plot_grid(join_grid)
-ggsave("./figures/hw_kl_0.01_200.pdf")
-ggsave("./figures/hw_kl_0.01_200.png")
+ggsave(figure_path("KL", ".pdf"))
+ggsave(figure_path("KL", ".png"))
 
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
-ggsave("./figures/hw_kl_0.01_200_hpd.pdf")
-ggsave("./figures/hw_kl_0.01_200_hpd.png")
+ggsave(figure_path("KL", ".pdf"))
+ggsave(figure_path("KL", ".png"))
 
 ### C_diss
 simple_grid = generate_grid(C_diss, p0, eps, m0)
 plot_grid(simple_grid)
-ggsave("./figures/hw_c_0.01_200_0.33.pdf")
-ggsave("./figures/hw_c_0.01_200_0.33.png")
+ggsave(figure_path("C", ".pdf", extra = simple_extra))
+ggsave(figure_path("C", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("C"))
 plot_grid(join_grid)
