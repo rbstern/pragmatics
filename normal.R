@@ -6,22 +6,32 @@ library(tidyverse)
 ## Pragmatic hypothesis for H0: mu = 0 using   ##
 ##  epsilon = 0.1 and M^2 = 2, KL and CD.      ##
 #################################################
-eps = 0.1
-n = 300
-mu0 = 0
-mus = seq(from = -1, to = 1, length.out = n)
-sigmas = seq(from = 1/n, to = 2, length.out = n)
 
-# KL grids
+###################################################
+## Global parameters                             ##
+mu0 = 0 # null hypothesis mean                   ##
+sigma1 = 1 # sigma for simple hypothesis         ##
+B = 300 # grid size                              ##
+eps = 0.1                                        ##
+###################################################
 
+###################################################
+## Useful variables                              ##
+mus = seq(from = -1, to = 1, length.out = B)     ##
+sigmas = seq(from = 1/n, to = 2, length.out = B) ##
+###################################################
+
+# Useful functions
+
+## Kullback-Leibler grid for null with sigma = sigma0
 normal_kl_grid = function(sigma0)
 {
-  new_grid <- tibble(mu = rep(mus, n), 
-                     sigma = rep(sigmas, each = n), 
-                     color = rep(NA, n*n))
-  for(ii in 1:length(sigmas))
+  new_grid <- tibble(mu = rep(mus, B), 
+                     sigma = rep(sigmas, each = B), 
+                     color = rep(NA, B*B))
+  for(ii in 1:B)
   {
-    color = rep(FALSE, n)
+    color = rep(FALSE, B)
     radius = sigmas[ii]*(1+2*eps-sigma0/sigmas[ii]-log(sigmas[ii]/sigma0))
     if(radius > 0)
     {
@@ -34,31 +44,17 @@ normal_kl_grid = function(sigma0)
   return(new_grid)
 }
 
-unit_sigma_kl_grid = normal_kl_grid(1)
-
-join_grid = normal_kl_grid(sigmas[1])
-for(sigma0 in sigmas)
-{
-  new_grid = normal_kl_grid(sigma0)
-  join_grid$color = (join_grid$color | new_grid$color)
-}
-
-#Save data
-#write_rds(join_grid, "./data/KL_norm_0.1_300_0.rds")
-#join_kl_grid = read_rds("./data/KL_norm_0.1_100_0.rds")
-
-# Classification distance grids
-
+## Classification distance grid for null with sigma = sigma0
 normal_cd_grid = function(sigma0)
 {
-  new_grid <- tibble(mu = rep(mus, n),
-                     sigma = rep(sigmas, each = n), 
-                     color = rep(NA, n*n))
-  for(ii in 1:length(sigmas))
+  new_grid <- tibble(mu = rep(mus, B),
+                     sigma = rep(sigmas, each = B), 
+                     color = rep(NA, B*B))
+  for(ii in 1:B)
   {
-    for(jj in 1:length(mus))
+    for(jj in 1:B)
     {
-      l_1 = function(x) abs(dnorm(x, mus[jj], sigmas[ii])-dnorm(x, mu0, sigma0))
+      l_1 = function(x) abs(dnorm(x, mus[jj], sigmas[ii]) - dnorm(x, mu0, sigma0))
       cd = 0.25*integrate(l_1, lower = -Inf, upper = Inf)$value
       new_grid$color[n*(ii-1)+jj] = (cd <= eps)
     }
@@ -66,21 +62,32 @@ normal_cd_grid = function(sigma0)
   return(new_grid)
 }
 
-unit_sigma_cd_grid = normal_cd_grid(1)
-
-join_grid = normal_cd_grid(sigmas[1])
-for(sigma0 in sigmas)
+## grid with unknown sigma
+generate_join_grid(grid_method)
 {
-  print(sigma0)
-  new_grid = normal_cd_grid(sigma0)
-  join_grid$color = (join_grid$color | new_grid$color)
+  join_grid = grid_method(sigmas[1])
+  for(sigma0 in sigmas)
+  {
+    new_grid = grid_method(sigma0)
+    join_grid$color = (join_grid$color | new_grid$color)
+  }
 }
 
-#Save data
-#write_rds(join_grid, "./data/CD_norm_0.1_300_0.rds")
-#join_cd_grid = read_rds("./data/CD_norm_0.1_300_0.rds")
+# Experiments
 
-# Plot function
+file_path = function(method) paste("normal_", method, "_", 
+                                   mu0, "_", round(eps, 2), "_", B, 
+                                   ".rds", sep = "")
+
+join_kl_grid = generate_join_grid(normal_kl_grid)
+#write_rds(file_path("KL"))
+
+join_cd_grid = generate_join_grid(normal_cd_grid)
+#write_rds(file_path("CD"))
+
+# Plots
+
+## Useful plot function
 
 plot_norm_grid <- function(grid)
 {
@@ -100,22 +107,32 @@ plot_norm_grid <- function(grid)
     ylab(expression(sigma^2))
 }
 
-#KL plots
+figure_path = function(name, ext, extra="") paste("./figures/normal_",
+                                                  name, "_", mu0, "_", round(eps,2), "_", B,
+                                                  extra, ext, sep = "")
 
+simple_extra = paste("_", round(sigma1, 2), sep = "")
+
+## KL plots
+
+unit_sigma_kl_grid = normal_kl_grid(sigma1)
 plot_norm_grid(unit_sigma_kl_grid)
-#ggsave("./figures/norm_kl_0.1_300_0_1.pdf")
-#ggsave("./figures/norm_kl_0.1_300_0_1.png")
+ggsave(figure_path("KL", ".pdf", extra = simple_extra))
+ggsave(figure_path("KL", ".png", extra = simple_extra))
 
+join_kl_grid = read_rds(file_path("KL"))
 plot_norm_grid(join_kl_grid)
-#ggsave("./figures/norm_kl_0.1_300_0.pdf")
-#ggsave("./figures/norm_kl_0.1_300_0.png")
+ggsave(figure_path("KL", ".pdf"))
+ggsave(figure_path("KL", ".png"))
 
-#CD plots
+## CD plots
 
+unit_sigma_cd_grid = normal_cd_grid(sigma1)
 plot_norm_grid(unit_sigma_cd_grid)
-#ggsave("./figures/norm_cd_0.1_300_0_1.pdf")
-#ggsave("./figures/norm_cd_0.1_300_0_1.png")
+ggsave(figure_path("CD", ".pdf", extra = simple_extra))
+ggsave(figure_path("CD", ".png", extra = simple_extra))
 
+join_cd_grid = read_rds(file_path("CD"))
 plot_norm_grid(join_cd_grid)
-#ggsave("./figures/norm_cd_0.1_300_0.pdf")
-#ggsave("./figures/norm_cd_0.1_300_0.png")
+ggsave(figure_path("CD", ".pdf"))
+ggsave(figure_path("CD", ".png"))

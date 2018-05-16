@@ -212,8 +212,9 @@ figure_path = function(name, ext, extra="") paste("./figures/HW_",
                                                   name, "_", m0, "_", eps, "_", B, 
                                                   extra, ext, sep="")
 
+simple_extra = paste("_", round(p0, 2), sep="")
+
 ## Actual plots
-simple_extra = paste("_", round(p0, 2), sep="") 
 
 ### BP_diss
 simple_grid = generate_grid(BP_diss, p0, eps, m0)
