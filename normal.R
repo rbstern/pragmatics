@@ -11,14 +11,14 @@ library(tidyverse)
 ## Global parameters                             ##
 mu0 = 0 # null hypothesis mean                   ##
 sigma1 = 1 # sigma for simple hypothesis         ##
-B = 300 # grid size                              ##
+B = 301 # grid size                              ##
 eps = 0.1                                        ##
 ###################################################
 
 ###################################################
 ## Useful variables                              ##
 mus = seq(from = -1, to = 1, length.out = B)     ##
-sigmas = seq(from = 1/n, to = 2, length.out = B) ##
+sigmas = seq(from = 1/B, to = 2, length.out = B) ##
 ###################################################
 
 # Useful functions
@@ -39,7 +39,7 @@ normal_kl_grid = function(sigma0)
       inter_right = mu0 + sqrt(radius)
       color = (mus > inter_left) & (mus < inter_right)
     }
-    new_grid$color[(n*(ii-1)+1):(n*ii)] = color
+    new_grid$color[(B*(ii-1)+1):(B*ii)] = color
   }
   return(new_grid)
 }
@@ -56,34 +56,36 @@ normal_cd_grid = function(sigma0)
     {
       l_1 = function(x) abs(dnorm(x, mus[jj], sigmas[ii]) - dnorm(x, mu0, sigma0))
       cd = 0.25*integrate(l_1, lower = -Inf, upper = Inf)$value
-      new_grid$color[n*(ii-1)+jj] = (cd <= eps)
+      new_grid$color[B*(ii-1)+jj] = (cd <= eps)
     }
   }
   return(new_grid)
 }
 
 ## grid with unknown sigma
-generate_join_grid(grid_method)
+generate_join_grid = function(grid_method)
 {
   join_grid = grid_method(sigmas[1])
   for(sigma0 in sigmas)
   {
+    print(paste(sigma0, "/", max(sigmas)))
     new_grid = grid_method(sigma0)
     join_grid$color = (join_grid$color | new_grid$color)
   }
+  join_grid
 }
 
 # Experiments
 
-file_path = function(method) paste("normal_", method, "_", 
+file_path = function(method) paste("./data/normal_", method, "_", 
                                    mu0, "_", round(eps, 2), "_", B, 
                                    ".rds", sep = "")
 
 join_kl_grid = generate_join_grid(normal_kl_grid)
-#write_rds(file_path("KL"))
+write_rds(join_kl_grid, file_path("KL"))
 
 join_cd_grid = generate_join_grid(normal_cd_grid)
-#write_rds(file_path("CD"))
+write_rds(join_cd_grid, file_path("C"))
 
 # Plots
 
@@ -129,10 +131,10 @@ ggsave(figure_path("KL", ".png"))
 
 unit_sigma_cd_grid = normal_cd_grid(sigma1)
 plot_norm_grid(unit_sigma_cd_grid)
-ggsave(figure_path("CD", ".pdf", extra = simple_extra))
-ggsave(figure_path("CD", ".png", extra = simple_extra))
+ggsave(figure_path("C", ".pdf", extra = simple_extra))
+ggsave(figure_path("C", ".png", extra = simple_extra))
 
-join_cd_grid = read_rds(file_path("CD"))
+join_cd_grid = read_rds(file_path("C"))
 plot_norm_grid(join_cd_grid)
-ggsave(figure_path("CD", ".pdf"))
-ggsave(figure_path("CD", ".png"))
+ggsave(figure_path("C", ".pdf"))
+ggsave(figure_path("C", ".png"))
