@@ -8,7 +8,7 @@ library(magrittr)
 m0 = 20 # multinomial sample size                         ##
 p0 = 1/3 # multinomial paramater in simple grid           ##
 eps = 0.1 # pragmatic slack                               ##
-B = 200 # size of grid                                    ##
+B = 500 # size of grid                                    ##
 ############################################################
 
 ############################################################
@@ -147,12 +147,16 @@ generate_grid = function(dissimilarity, p0, eps, m = 1)
 
 generate_join_grid = function(dissimilarity, eps, m = 1)
 {
+  start_time = proc.time()
   join_grid = generate_grid(dissimilarity, thetas[1], eps, m)
+  print(proc.time() - start_time)
   for(theta in thetas)
   {
     print(theta)
+    start_time = proc.time()
     new_grid = generate_grid(dissimilarity, theta, eps, m)
     join_grid$color = (join_grid$color | new_grid$color)
+    print(proc.time() - start_time)
   }
   join_grid
 }
@@ -232,6 +236,7 @@ ggsave(figure_path("BP", ".pdf"))
 ggsave(figure_path("BP", ".png"))
 
 ### KL_diss
+eps = 0.01
 simple_grid = generate_grid(KL_diss, p0, eps)
 plot_grid(simple_grid)
 ggsave(figure_path("KL", ".pdf", extra = simple_extra))
