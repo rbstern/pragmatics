@@ -252,6 +252,7 @@ ggsave(figure_path("KL", ".pdf"))
 ggsave(figure_path("KL", ".png"))
 
 ### C_diss
+eps = 0.1
 simple_grid = generate_grid(C_diss, p0, eps, m0)
 plot_grid(simple_grid)
 ggsave(figure_path("C", ".pdf", extra = simple_extra))
