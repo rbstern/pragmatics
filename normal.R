@@ -142,7 +142,6 @@ ggsave(figure_path("KL", ".pdf"))
 ggsave(figure_path("KL", ".png"))
 
 ## C plots
-
 unit_sigma_C_grid = normal_C_grid(simple_hypothesis)
 plot_norm_grid(unit_sigma_C_grid, null_hypothesis)
 ggsave(figure_path("C", ".pdf", extra = simple_extra))
