@@ -37,7 +37,7 @@ normal_KL_grid = function(parameters)
   for(ii in 1:B)
   {
     color = rep(FALSE, B)
-    radius = sigmas[ii]*(1+2*eps-sigma0/sigmas[ii]-log(sigmas[ii]/sigma0))
+    radius = sigmas[ii]^2*(1 + 2*eps - 2*log(sigmas[ii]/sigma0)) -sigma0^2
     if(radius > 0)
     {
       inter_left = mu0 - sqrt(radius)
@@ -100,7 +100,7 @@ plot_norm_grid <- function(grid, null_hypothesis)
                show.legend = FALSE, 
                data = null_hypothesis) +
     xlab(expression(mu)) + 
-    ylab(expression(sigma^2))
+    ylab(expression(sigma))
 }
 
 #################################
@@ -179,10 +179,12 @@ figure_path = function(name, ext, extra="") paste("./figures/normal_vc_",
                                                   name, "_", mu0, "_", round(eps,2), "_", B,
                                                   extra, ext, sep = "")
 
+join_KL_grid = read_rds(file_path("KL"))
 plot_norm_grid(join_KL_grid, null_hypothesis)
 ggsave(figure_path("KL", ".pdf"))
 ggsave(figure_path("KL", ".png"))
 
+join_C_grid = read_rds(file_path("C"))
 plot_norm_grid(join_C_grid, null_hypothesis)
 ggsave(figure_path("C", ".pdf"))
 ggsave(figure_path("C", ".png"))
