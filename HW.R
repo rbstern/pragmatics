@@ -227,10 +227,6 @@ ggsave(figure_path("BP", ".pdf", extra = simple_extra))
 ggsave(figure_path("BP", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("BP"))
-plot_grid(join_grid)
-ggsave(figure_path("BP", ".pdf"))
-ggsave(figure_path("BP", ".png"))
-
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
 ggsave(figure_path("BP", ".pdf"))
 ggsave(figure_path("BP", ".png"))
@@ -243,10 +239,6 @@ ggsave(figure_path("KL", ".pdf", extra = simple_extra))
 ggsave(figure_path("KL", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("KL"))
-plot_grid(join_grid)
-ggsave(figure_path("KL", ".pdf"))
-ggsave(figure_path("KL", ".png"))
-
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
 ggsave(figure_path("KL", ".pdf"))
 ggsave(figure_path("KL", ".png"))
@@ -259,10 +251,6 @@ ggsave(figure_path("C", ".pdf", extra = simple_extra))
 ggsave(figure_path("C", ".png", extra = simple_extra))
 
 join_grid = read_rds(file_path("C"))
-plot_grid(join_grid)
-ggsave(figure_path("C", ".pdf"))
-ggsave(figure_path("C", ".png"))
-
 plot_grid(join_grid) %>% add_hpd_grid(hpd_chull_grid, hpd_labels)
 ggsave(figure_path("C", ".pdf", extra = "_hpd"))
 ggsave(figure_path("C", ".png", extra = "_hpd"))
