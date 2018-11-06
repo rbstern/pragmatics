@@ -190,6 +190,7 @@ plot_grid = function(grid, col = "dodgerblue4", alpha = 0.2)
   poly_grid = bind_rows(poly_min, poly_max)
   poly_grid %>%
     ggplot(aes(x = theta1, y = theta3)) +
+    theme_minimal() +
     geom_polygon(color = col, fill = col, alpha = alpha) +
     geom_path(aes(x = theta1, y = theta3), data = simplex) +
     stat_function(fun = function(x) (1-sqrt(x))^2, n = 101, color = "red") +
